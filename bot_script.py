@@ -202,15 +202,15 @@ def run_automation():
                         page.wait_for_timeout(5000)
                     else:
                         raise Exception(f"Failed to navigate after {max_nav_retries} attempts")
-            # Wait for the Email button to appear
-            page.wait_for_timeout(5000)
+            # Wait briefly before finding the email button
+            page.wait_for_timeout(1000)
 
             # ==== STEP 2: Click "Email" button ====
             print("[STEP 2] Clicking 'Email' button...")
             email_btn = page.locator('text="Email"').first
             email_btn.wait_for(state='visible', timeout=30000)
             email_btn.click()
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(500)
 
             # ==== STEP 3: Enter email address ====
             print(f"[STEP 3] Entering email: {email}")
@@ -223,11 +223,11 @@ def run_automation():
             print("[STEP 4] Clicking login button...")
             login_btn = page.locator('button', has_text='\u0412\u043e\u0439\u0442\u0438')
             login_btn.click()
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(1000)
 
             # ==== STEP 5: Wait for verification code email ====
             print("[STEP 5] Waiting for verification code in email...")
-            code = check_mailbox(sid_token)
+            code = check_mailbox(sid_token, delay=2)
             if not code:
                 print("[ERROR] Could not retrieve verification code. Exiting.")
                 return {"success": False, "error": "Could not retrieve verification code"}
@@ -254,7 +254,7 @@ def run_automation():
 
             # Wait for auto-submission or page transition
             print("[STEP 6] Code entered. Waiting for page to process...")
-            page.wait_for_timeout(5000)
+            page.wait_for_timeout(2000)
 
             # ==== STEP 7: Skip Passkey (click "Пропустить") ====
             print("[STEP 7] Skipping Passkey setup...")
@@ -262,12 +262,12 @@ def run_automation():
                 skip_btn = page.locator('text="\u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u0442\u044c"')
                 skip_btn.wait_for(state='visible', timeout=15000)
                 skip_btn.click()
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(1000)
             except Exception as e:
                 print(f"[WARN] Could not find skip button, trying alternatives: {e}")
                 # Try clicking anywhere that says skip
                 page.locator('button:has-text("\u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u0442\u044c"), a:has-text("\u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u0442\u044c")').first.click()
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(1000)
 
             # ==== STEP 8: Click "Подключить устройство" (Connect device) ====
             print("[STEP 8] Clicking 'Connect Device'...")
@@ -275,12 +275,12 @@ def run_automation():
                 connect_btn = page.locator('text="\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e"')
                 connect_btn.wait_for(state='visible', timeout=15000)
                 connect_btn.click()
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(1000)
             except Exception:
                 # Alternative: look for the green button on the dashboard
                 print("[INFO] Trying alternative selector for connect button...")
                 page.locator('button', has_text='\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c').first.click()
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(1000)
 
             # ==== STEP 9: Click "Другое устройство" (Other device) ====
             print("[STEP 9] Clicking 'Other Device'...")
@@ -288,11 +288,11 @@ def run_automation():
                 other_device_btn = page.locator('text="\u0414\u0440\u0443\u0433\u043e\u0435 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e"')
                 other_device_btn.wait_for(state='visible', timeout=15000)
                 other_device_btn.click()
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(1000)
             except Exception:
                 print("[INFO] Trying alternative selector for 'other device' button...")
                 page.locator('button', has_text='\u0414\u0440\u0443\u0433\u043e\u0435').first.click()
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(1000)
 
             # ==== STEP 10: Extract the link ====
             print("[STEP 10] Extracting the link...")
