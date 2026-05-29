@@ -1,6 +1,6 @@
 {
-  "name": "NovaBooster Link Generator",
-  "short_name": "NovaBooster",
+  "name": "NovaBooster Bot",
+  "short_name": "NovaBooster Bot",
   "description": "Generate and extract your new link with a single click",
   "start_url": "/",
   "display": "standalone",
