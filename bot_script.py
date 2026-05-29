@@ -226,9 +226,12 @@ def run_automation_with_callback(stream_callback=None):
 
             # ==== STEP 2: Click "Email" button ====
             emit("[STEP 2] Clicking 'Email' button...", page)
-            email_btn = page.locator('text="Email"').first
-            email_btn.wait_for(state='visible', timeout=30000)
-            email_btn.click()
+            try:
+                email_btn = page.locator('text="Email"').first
+                email_btn.wait_for(state='visible', timeout=15000)
+                email_btn.click()
+            except Exception as e:
+                print(f"[WARN] Email button not found, maybe input is already visible? Error: {e}")
 
             # ==== STEP 3: Enter email address ====
             emit(f"[STEP 3] Entering email: {email}", page)
