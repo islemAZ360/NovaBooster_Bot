@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Show error
                 loadingState.classList.add('hidden');
                 errorState.classList.remove('hidden');
-                errorMessage.textContent = data.error || 'حدث خطأ غير معروف';
+                errorMessage.textContent = data.error || 'Unknown error occurred';
                 generateBtn.classList.remove('hidden');
             }
 
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             stopProgress();
             loadingState.classList.add('hidden');
             errorState.classList.remove('hidden');
-            errorMessage.textContent = 'خطأ في الاتصال بالخادم: ' + error.message;
+            errorMessage.textContent = 'Server connection error: ' + error.message;
             generateBtn.classList.remove('hidden');
         }
     }

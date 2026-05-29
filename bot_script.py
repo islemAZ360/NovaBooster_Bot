@@ -210,20 +210,17 @@ def run_automation():
             email_btn = page.locator('text="Email"').first
             email_btn.wait_for(state='visible', timeout=30000)
             email_btn.click()
-            page.wait_for_timeout(500)
 
             # ==== STEP 3: Enter email address ====
             print(f"[STEP 3] Entering email: {email}")
             email_input = page.get_by_placeholder('your@email.com')
             email_input.wait_for(state='visible', timeout=10000)
             email_input.fill(email)
-            page.wait_for_timeout(500)
 
             # ==== STEP 4: Click "Войти" (Login/Register) ====
             print("[STEP 4] Clicking login button...")
             login_btn = page.locator('button', has_text='\u0412\u043e\u0439\u0442\u0438')
             login_btn.click()
-            page.wait_for_timeout(1000)
 
             # ==== STEP 5: Wait for verification code email ====
             print("[STEP 5] Waiting for verification code in email...")
@@ -262,7 +259,6 @@ def run_automation():
                 skip_btn = page.locator('text="\u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u0442\u044c"')
                 skip_btn.wait_for(state='visible', timeout=15000)
                 skip_btn.click()
-                page.wait_for_timeout(1000)
             except Exception as e:
                 print(f"[WARN] Could not find skip button, trying alternatives: {e}")
                 # Try clicking anywhere that says skip
@@ -275,7 +271,6 @@ def run_automation():
                 connect_btn = page.locator('text="\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e"')
                 connect_btn.wait_for(state='visible', timeout=15000)
                 connect_btn.click()
-                page.wait_for_timeout(1000)
             except Exception:
                 # Alternative: look for the green button on the dashboard
                 print("[INFO] Trying alternative selector for connect button...")
@@ -288,7 +283,6 @@ def run_automation():
                 other_device_btn = page.locator('text="\u0414\u0440\u0443\u0433\u043e\u0435 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e"')
                 other_device_btn.wait_for(state='visible', timeout=15000)
                 other_device_btn.click()
-                page.wait_for_timeout(1000)
             except Exception:
                 print("[INFO] Trying alternative selector for 'other device' button...")
                 page.locator('button', has_text='\u0414\u0440\u0443\u0433\u043e\u0435').first.click()

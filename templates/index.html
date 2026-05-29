@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
     <title>NovaBooster Link Generator</title>
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -17,22 +20,22 @@
                 <i class="fa-solid fa-robot"></i>
             </div>
             <h1>NovaBooster Bot</h1>
-            <p>قم بإنشاء واستخراج رابطك الجديد بضغطة زر</p>
+            <p>Generate and extract your new link with a single click</p>
         </header>
 
         <main>
             <button id="generateBtn" class="primary-btn">
-                <span class="btn-text">استخراج رابط جديد</span>
+                <span class="btn-text">Generate New Link</span>
                 <i class="fa-solid fa-bolt"></i>
             </button>
 
             <div id="loadingState" class="hidden">
                 <div class="spinner"></div>
-                <p class="loading-text">جاري العمل... (قد يستغرق الأمر دقيقة)</p>
+                <p class="loading-text">Processing... (This may take a minute)</p>
                 <div class="progress-steps">
-                    <span class="step active" id="step1">إنشاء بريد</span>
-                    <span class="step" id="step2">تسجيل الدخول</span>
-                    <span class="step" id="step3">استخراج الرابط</span>
+                    <span class="step active" id="step1">Creating Email</span>
+                    <span class="step" id="step2">Logging In</span>
+                    <span class="step" id="step3">Extracting Link</span>
                 </div>
             </div>
 
@@ -40,31 +43,31 @@
                 <div class="success-icon">
                     <i class="fa-solid fa-check-circle"></i>
                 </div>
-                <h3>تم استخراج الرابط بنجاح!</h3>
+                <h3>Link Extracted Successfully!</h3>
                 
                 <div class="link-container" id="linkContainer">
                     <input type="text" id="finalLink" readonly value="https://example.com/link">
-                    <button id="copyBtn" class="icon-btn" title="نسخ الرابط">
+                    <button id="copyBtn" class="icon-btn" title="Copy Link">
                         <i class="fa-regular fa-copy"></i>
                     </button>
                 </div>
                 
-                <p id="copyMessage" class="success-message hidden">تم نسخ الرابط إلى الحافظة!</p>
-                <button id="restartBtn" class="secondary-btn" style="margin-top: 1.5rem;">استخراج رابط آخر</button>
+                <p id="copyMessage" class="success-message hidden">Link copied to clipboard!</p>
+                <button id="restartBtn" class="secondary-btn" style="margin-top: 1.5rem;">Generate Another Link</button>
             </div>
 
             <div id="errorState" class="hidden">
                 <div class="error-icon">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
-                <h3>حدث خطأ أثناء العملية</h3>
-                <p id="errorMessage">تعذر استخراج الرابط، يرجى المحاولة مرة أخرى.</p>
-                <button id="retryBtn" class="secondary-btn">حاول مرة أخرى</button>
+                <h3>An Error Occurred</h3>
+                <p id="errorMessage">Could not extract link, please try again.</p>
+                <button id="retryBtn" class="secondary-btn">Try Again</button>
             </div>
         </main>
         
         <footer>
-            <p>Made for Automation &copy; 2026</p>
+            <p style="font-size: 0.85rem;">Made by islam azaizia &copy; 2026</p>
         </footer>
     </div>
 
