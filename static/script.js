@@ -10,6 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyMessage = document.getElementById('copyMessage');
     const errorMessage = document.getElementById('errorMessage');
     const restartBtn = document.getElementById('restartBtn');
+    
+    // Live Viewer Elements
+    const liveBtn = document.getElementById('liveBtn');
+    const liveState = document.getElementById('liveState');
+    const liveScreenshot = document.getElementById('liveScreenshot');
+    const liveTerminal = document.getElementById('liveTerminal');
+    const liveSpinner = document.getElementById('liveSpinner');
+    const actionButtons = document.querySelector('.action-buttons');
 
     // Progress steps simulation
     const steps = [
@@ -40,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function startAutomation() {
         // UI Updates
-        generateBtn.classList.add('hidden');
+        actionButtons.classList.add('hidden');
         errorState.classList.add('hidden');
         resultState.classList.add('hidden');
         loadingState.classList.remove('hidden');
@@ -68,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingState.classList.add('hidden');
                 errorState.classList.remove('hidden');
                 errorMessage.textContent = data.error || 'Unknown error occurred';
-                generateBtn.classList.remove('hidden');
+                actionButtons.classList.remove('hidden');
             }
 
         } catch (error) {
@@ -76,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingState.classList.add('hidden');
             errorState.classList.remove('hidden');
             errorMessage.textContent = 'Server connection error: ' + error.message;
-            generateBtn.classList.remove('hidden');
+            actionButtons.classList.remove('hidden');
         }
     }
 
@@ -100,10 +108,79 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Live Automation Stream
+    function startLiveAutomation() {
+        actionButtons.classList.add('hidden');
+        errorState.classList.add('hidden');
+        resultState.classList.add('hidden');
+        liveState.classList.remove('hidden');
+        
+        liveTerminal.innerHTML = '<p>> Starting live automation...</p>';
+        liveScreenshot.src = '';
+        liveScreenshot.classList.add('hidden');
+        liveSpinner.classList.remove('hidden');
+
+        const eventSource = new EventSource('/api/generate_stream');
+
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'log') {
+                const p = document.createElement('p');
+                p.textContent = '> ' + data.message;
+                liveTerminal.appendChild(p);
+                liveTerminal.scrollTop = liveTerminal.scrollHeight;
+            } 
+            else if (data.type === 'result') {
+                eventSource.close();
+                liveState.classList.add('hidden');
+                
+                if (data.data.success) {
+                    resultState.classList.remove('hidden');
+                    finalLink.value = data.data.link;
+                } else {
+                    errorState.classList.remove('hidden');
+                    errorMessage.textContent = data.data.error || 'Unknown error occurred';
+                    actionButtons.classList.remove('hidden');
+                }
+            }
+            else if (data.type === 'error') {
+                eventSource.close();
+                liveState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                errorMessage.textContent = 'Automation error: ' + data.error;
+                actionButtons.classList.remove('hidden');
+            }
+
+            if (data.image) {
+                liveScreenshot.src = 'data:image/jpeg;base64,' + data.image;
+                liveScreenshot.classList.remove('hidden');
+                liveSpinner.classList.add('hidden');
+            }
+        };
+
+        eventSource.onerror = function(err) {
+            eventSource.close();
+            liveState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            errorMessage.textContent = 'Server connection stream error.';
+            actionButtons.classList.remove('hidden');
+        };
+    }
+
+    function resetUI() {
+        errorState.classList.add('hidden');
+        resultState.classList.add('hidden');
+        loadingState.classList.add('hidden');
+        liveState.classList.add('hidden');
+        actionButtons.classList.remove('hidden');
+    }
+
     // Event Listeners
     generateBtn.addEventListener('click', startAutomation);
-    retryBtn.addEventListener('click', startAutomation);
-    if(restartBtn) restartBtn.addEventListener('click', startAutomation);
+    if(liveBtn) liveBtn.addEventListener('click', startLiveAutomation);
+    retryBtn.addEventListener('click', resetUI);
+    if(restartBtn) restartBtn.addEventListener('click', resetUI);
     
     // Copy on clicking either the container or the button
     linkContainer.addEventListener('click', copyLinkToClipboard);

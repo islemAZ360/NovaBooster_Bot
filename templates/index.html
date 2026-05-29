@@ -24,10 +24,17 @@
         </header>
 
         <main>
-            <button id="generateBtn" class="primary-btn">
-                <span class="btn-text">Generate New Link</span>
-                <i class="fa-solid fa-bolt"></i>
-            </button>
+            <div class="action-buttons">
+                <button id="generateBtn" class="primary-btn">
+                    <span class="btn-text">Generate Fast Link</span>
+                    <i class="fa-solid fa-bolt"></i>
+                </button>
+                
+                <button id="liveBtn" class="secondary-btn" style="margin-top: 10px;">
+                    <span class="btn-text">View Live Process</span>
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </div>
 
             <div id="loadingState" class="hidden">
                 <div class="spinner"></div>
@@ -36,6 +43,17 @@
                     <span class="step active" id="step1">Creating Email</span>
                     <span class="step" id="step2">Logging In</span>
                     <span class="step" id="step3">Extracting Link</span>
+                </div>
+            </div>
+
+            <div id="liveState" class="hidden">
+                <h3 style="margin-bottom: 10px; color: var(--accent);">Live Viewer <div class="pulse-indicator"></div></h3>
+                <div class="live-screen-container">
+                    <img id="liveScreenshot" src="" alt="Waiting for screen..." class="hidden">
+                    <div class="spinner" id="liveSpinner"></div>
+                </div>
+                <div class="terminal-box" id="liveTerminal">
+                    <p>> Starting automation...</p>
                 </div>
             </div>
 

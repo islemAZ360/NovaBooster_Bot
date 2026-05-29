@@ -1,6 +1,6 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, Response
 import os
-from bot_script import run_automation
+from bot_script import run_automation, run_automation_stream
 
 app = Flask(__name__)
 
@@ -16,6 +16,10 @@ def generate_link():
         return jsonify(result)
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/generate_stream', methods=['GET'])
+def generate_stream():
+    return Response(run_automation_stream(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
     # Use PORT provided by Render (or 5000 locally)

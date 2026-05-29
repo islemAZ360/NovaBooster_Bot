@@ -4,6 +4,10 @@ import io
 import time
 import requests
 import re
+import queue
+import threading
+import base64
+import json
 from playwright.sync_api import sync_playwright
 
 # Fix encoding for Windows console
@@ -170,13 +174,28 @@ def _extract_code(text):
 # MAIN AUTOMATION
 # ============================================================
 
-def run_automation():
+def run_automation_with_callback(stream_callback=None):
+    def emit(msg, page=None):
+        print(msg)
+        if stream_callback:
+            payload = {"type": "log", "message": msg}
+            if page:
+                try:
+                    # capture low-res jpeg for speed
+                    img_bytes = page.screenshot(type="jpeg", quality=40)
+                    payload["image"] = base64.b64encode(img_bytes).decode('utf-8')
+                except Exception:
+                    pass
+            stream_callback(payload)
+
     # Step 0: Generate temp email
+    emit("[INFO] Getting temp email...")
     email, sid_token = get_temp_email()
     if not email:
-        print("[ERROR] Could not generate temp email. Exiting.")
+        msg = "[ERROR] Could not generate temp email. Exiting."
+        emit(msg)
         return {"success": False, "error": "Could not generate temp email"}
-    print(f"[OK] Generated temporary email: {email}")
+    emit(f"[OK] Generated temporary email: {email}")
 
     with sync_playwright() as p:
         # Launch browser in headless mode for server deployment
@@ -191,12 +210,12 @@ def run_automation():
             max_nav_retries = 5
             for attempt in range(1, max_nav_retries + 1):
                 try:
-                    print(f"[STEP 1] Navigating to bot.botnovabooster.ru ... (Attempt {attempt}/{max_nav_retries})")
+                    emit(f"[STEP 1] Navigating to bot.botnovabooster.ru ... (Attempt {attempt}/{max_nav_retries})", page)
                     page.goto('https://bot.botnovabooster.ru', wait_until='domcontentloaded', timeout=90000)
-                    print("[STEP 1] Page loaded successfully!")
+                    emit("[STEP 1] Page loaded successfully!", page)
                     break
                 except Exception as nav_err:
-                    print(f"[WARN] Navigation failed: {nav_err}")
+                    emit(f"[WARN] Navigation failed: {nav_err}", page)
                     if attempt < max_nav_retries:
                         print(f"[INFO] Retrying in 5 seconds...")
                         page.wait_for_timeout(5000)
@@ -206,31 +225,31 @@ def run_automation():
             page.wait_for_timeout(1000)
 
             # ==== STEP 2: Click "Email" button ====
-            print("[STEP 2] Clicking 'Email' button...")
+            emit("[STEP 2] Clicking 'Email' button...", page)
             email_btn = page.locator('text="Email"').first
             email_btn.wait_for(state='visible', timeout=30000)
             email_btn.click()
 
             # ==== STEP 3: Enter email address ====
-            print(f"[STEP 3] Entering email: {email}")
+            emit(f"[STEP 3] Entering email: {email}", page)
             email_input = page.get_by_placeholder('your@email.com')
             email_input.wait_for(state='visible', timeout=10000)
             email_input.fill(email)
 
             # ==== STEP 4: Click "Войти" (Login/Register) ====
-            print("[STEP 4] Clicking login button...")
+            emit("[STEP 4] Clicking login button...", page)
             login_btn = page.locator('button', has_text='\u0412\u043e\u0439\u0442\u0438')
             login_btn.click()
 
             # ==== STEP 5: Wait for verification code email ====
-            print("[STEP 5] Waiting for verification code in email...")
+            emit("[STEP 5] Waiting for verification code in email...", page)
             code = check_mailbox(sid_token, delay=2)
             if not code:
-                print("[ERROR] Could not retrieve verification code. Exiting.")
+                emit("[ERROR] Could not retrieve verification code. Exiting.", page)
                 return {"success": False, "error": "Could not retrieve verification code"}
 
             # ==== STEP 6: Enter the 6-digit code ====
-            print(f"[STEP 6] Entering verification code: {code}")
+            emit(f"[STEP 6] Entering verification code: {code}", page)
             # The code page has 6 separate input fields
             code_inputs = page.locator('input[type="text"], input[type="number"], input[type="tel"]')
             input_count = code_inputs.count()
@@ -250,11 +269,11 @@ def run_automation():
                     page.wait_for_timeout(200)
 
             # Wait for auto-submission or page transition
-            print("[STEP 6] Code entered. Waiting for page to process...")
+            emit("[STEP 6] Code entered. Waiting for page to process...", page)
             page.wait_for_timeout(2000)
 
             # ==== STEP 7: Skip Passkey (click "Пропустить") ====
-            print("[STEP 7] Skipping Passkey setup...")
+            emit("[STEP 7] Skipping Passkey setup...", page)
             try:
                 skip_btn = page.locator('text="\u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u0442\u044c"')
                 skip_btn.wait_for(state='visible', timeout=15000)
@@ -266,7 +285,7 @@ def run_automation():
                 page.wait_for_timeout(1000)
 
             # ==== STEP 8: Click "Подключить устройство" (Connect device) ====
-            print("[STEP 8] Clicking 'Connect Device'...")
+            emit("[STEP 8] Clicking 'Connect Device'...", page)
             try:
                 connect_btn = page.locator('text="\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e"')
                 connect_btn.wait_for(state='visible', timeout=15000)
@@ -278,7 +297,7 @@ def run_automation():
                 page.wait_for_timeout(1000)
 
             # ==== STEP 9: Click "Другое устройство" (Other device) ====
-            print("[STEP 9] Clicking 'Other Device'...")
+            emit("[STEP 9] Clicking 'Other Device'...", page)
             try:
                 other_device_btn = page.locator('text="\u0414\u0440\u0443\u0433\u043e\u0435 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e"')
                 other_device_btn.wait_for(state='visible', timeout=15000)
@@ -289,12 +308,12 @@ def run_automation():
                 page.wait_for_timeout(1000)
 
             # ==== STEP 10: Extract the link ====
-            print("[STEP 10] Extracting the link...")
+            emit("[STEP 10] Extracting the link...", page)
 
             final_link = None
 
             # Attempt 0: Search page content for the exact pattern first
-            print("[INFO] Searching page content for /sub/ pattern...")
+            emit("[INFO] Searching page content for /sub/ pattern...", page)
             try:
                 page_text = page.content()
                 # Look for tsub-novavps.ru or similar domains with /sub/ and a token
@@ -365,18 +384,41 @@ def run_automation():
             return {"success": True, "link": final_link, "email": email}
 
         except Exception as e:
-            print(f"[ERROR] Automation failed: {e}")
+            emit(f"[ERROR] Automation failed: {e}", page)
             error_msg = str(e)
-            # Take screenshot for debugging
-            try:
-                page.screenshot(path='error_screenshot.png')
-                print("[INFO] Error screenshot saved to error_screenshot.png")
-            except:
-                pass
             return {"success": False, "error": error_msg}
         finally:
             context.close()
             browser.close()
+
+def run_automation():
+    return run_automation_with_callback(stream_callback=None)
+
+def run_automation_stream():
+    """Generator that yields events from run_automation_with_callback via a Queue."""
+    q = queue.Queue()
+
+    def stream_callback(event):
+        q.put(event)
+
+    def worker():
+        try:
+            res = run_automation_with_callback(stream_callback)
+            q.put({"type": "result", "data": res})
+        except Exception as e:
+            q.put({"type": "error", "error": str(e)})
+        finally:
+            q.put(None) # Sentinel to stop
+
+    t = threading.Thread(target=worker)
+    t.start()
+
+    while True:
+        event = q.get()
+        if event is None:
+            break
+        # Format as SSE
+        yield f"data: {json.dumps(event)}\n\n"
 
 if __name__ == "__main__":
     print(run_automation())

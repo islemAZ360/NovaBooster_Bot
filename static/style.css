@@ -302,6 +302,63 @@ input#finalLink {
     word-break: break-word;
 }
 
+/* Live Viewer State */
+.live-screen-container {
+    background: #000;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 2px;
+    margin-bottom: 1rem;
+    position: relative;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#liveScreenshot {
+    width: 100%;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+.terminal-box {
+    background: #1e1e1e;
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    text-align: left;
+    padding: 1rem;
+    border-radius: 8px;
+    height: 150px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    line-height: 1.4;
+}
+
+.pulse-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: var(--error);
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+    margin-left: 10px;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 /* Utilities */
 .hidden {
     display: none !important;
