@@ -205,6 +205,12 @@ def run_automation_with_callback(stream_callback=None):
         context = browser.new_context(permissions=['clipboard-read', 'clipboard-write'])
         page = context.new_page()
 
+        # OPTIMIZATION: Block images, fonts, and stylesheets to load instantly
+        page.route("**/*", lambda route: route.abort() 
+            if route.request.resource_type in ["image", "stylesheet", "font", "media"] 
+            else route.continue_()
+        )
+
         try:
             # ==== STEP 1: Navigate to site (with retry) ====
             max_nav_retries = 5
@@ -243,7 +249,7 @@ def run_automation_with_callback(stream_callback=None):
 
             # ==== STEP 5: Wait for verification code email ====
             emit("[STEP 5] Waiting for verification code in email...", page)
-            code = check_mailbox(sid_token, delay=2)
+            code = check_mailbox(sid_token, delay=1)
             if not code:
                 emit("[ERROR] Could not retrieve verification code. Exiting.", page)
                 return {"success": False, "error": "Could not retrieve verification code"}
@@ -258,7 +264,6 @@ def run_automation_with_callback(stream_callback=None):
             if input_count >= len(code):
                 for idx, digit in enumerate(code):
                     code_inputs.nth(idx).fill(digit)
-                    page.wait_for_timeout(200)
             else:
                 # Fallback: try to find inputs and type digit by digit
                 print("[INFO] Trying keyboard input fallback...")
@@ -266,11 +271,9 @@ def run_automation_with_callback(stream_callback=None):
                 first_input.click()
                 for digit in code:
                     page.keyboard.press(digit)
-                    page.wait_for_timeout(200)
 
             # Wait for auto-submission or page transition
             emit("[STEP 6] Code entered. Waiting for page to process...", page)
-            page.wait_for_timeout(2000)
 
             # ==== STEP 7: Skip Passkey (click "Пропустить") ====
             emit("[STEP 7] Skipping Passkey setup...", page)
