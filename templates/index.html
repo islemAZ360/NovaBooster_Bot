@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaBooster Link Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="container glass-panel">
+        <header>
+            <div class="logo-container">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <h1>NovaBooster Bot</h1>
+            <p>قم بإنشاء واستخراج رابطك الجديد بضغطة زر</p>
+        </header>
+
+        <main>
+            <button id="generateBtn" class="primary-btn">
+                <span class="btn-text">استخراج رابط جديد</span>
+                <i class="fa-solid fa-bolt"></i>
+            </button>
+
+            <div id="loadingState" class="hidden">
+                <div class="spinner"></div>
+                <p class="loading-text">جاري العمل... (قد يستغرق الأمر دقيقة)</p>
+                <div class="progress-steps">
+                    <span class="step active" id="step1">إنشاء بريد</span>
+                    <span class="step" id="step2">تسجيل الدخول</span>
+                    <span class="step" id="step3">استخراج الرابط</span>
+                </div>
+            </div>
+
+            <div id="resultState" class="hidden">
+                <div class="success-icon">
+                    <i class="fa-solid fa-check-circle"></i>
+                </div>
+                <h3>تم استخراج الرابط بنجاح!</h3>
+                
+                <div class="link-container" id="linkContainer">
+                    <input type="text" id="finalLink" readonly value="https://example.com/link">
+                    <button id="copyBtn" class="icon-btn" title="نسخ الرابط">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                
+                <p id="copyMessage" class="success-message hidden">تم نسخ الرابط إلى الحافظة!</p>
+            </div>
+
+            <div id="errorState" class="hidden">
+                <div class="error-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3>حدث خطأ أثناء العملية</h3>
+                <p id="errorMessage">تعذر استخراج الرابط، يرجى المحاولة مرة أخرى.</p>
+                <button id="retryBtn" class="secondary-btn">حاول مرة أخرى</button>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Made for Automation &copy; 2026</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
