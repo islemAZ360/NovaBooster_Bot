@@ -182,8 +182,8 @@ def run_automation():
         # Launch browser in headless mode for server deployment
         browser = p.chromium.launch(headless=True, args=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'])
 
-        # Create isolated context (clean cookies every time)
-        context = browser.new_context()
+        # Create isolated context (clean cookies every time) with clipboard permissions
+        context = browser.new_context(permissions=['clipboard-read', 'clipboard-write'])
         page = context.new_page()
 
         try:
@@ -297,23 +297,49 @@ def run_automation():
             # ==== STEP 10: Extract the link ====
             print("[STEP 10] Extracting the link...")
 
-            # Method 1: Try to get the link from "Скопировать ссылку" button
             final_link = None
+
+            # Attempt 0: Search page content for the exact pattern first
+            print("[INFO] Searching page content for /sub/ pattern...")
             try:
-                copy_btn = page.locator('text="\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443"')
-                copy_btn.wait_for(state='visible', timeout=10000)
-
-                # Try to get the link from clipboard by clicking the copy button
-                copy_btn.click()
-                page.wait_for_timeout(1000)
-
-                # Try to read clipboard
-                try:
-                    final_link = page.evaluate('navigator.clipboard.readText()')
-                except Exception:
-                    pass
+                page_text = page.content()
+                # Look for tsub-novavps.ru or similar domains with /sub/ and a token
+                sub_matches = re.findall(r'(https?://[a-zA-Z0-9.-]+/sub/[^\s"<>]+)', page_text)
+                if sub_matches:
+                    final_link = sub_matches[0]
+                    print(f"[INFO] Found link via regex in HTML: {final_link}")
             except Exception as e:
-                print(f"[WARN] Could not click copy button: {e}")
+                print(f"[WARN] Regex search failed: {e}")
+
+            # Method 1: Try to get the link from "Скопировать ссылку" button
+            if not final_link:
+                try:
+                    # Inject clipboard interceptor just in case
+                    page.evaluate("window.copiedText = ''; navigator.clipboard.writeText = async (text) => { window.copiedText = text; };")
+                    
+                    copy_btn = page.locator('text="\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443"')
+                    copy_btn.wait_for(state='visible', timeout=10000)
+
+                    # Try to get the link from clipboard by clicking the copy button
+                    copy_btn.click()
+                    page.wait_for_timeout(1500)
+
+                    # Check intercepted clipboard
+                    intercepted = page.evaluate('window.copiedText')
+                    if intercepted and 'http' in intercepted:
+                        final_link = intercepted
+                        print("[INFO] Got link from intercepted clipboard.")
+                    else:
+                        # Try to read actual clipboard
+                        try:
+                            clipboard_text = page.evaluate('navigator.clipboard.readText()')
+                            if clipboard_text and 'http' in clipboard_text:
+                                final_link = clipboard_text
+                                print("[INFO] Got link from actual clipboard.")
+                        except Exception:
+                            pass
+                except Exception as e:
+                    print(f"[WARN] Could not click copy button: {e}")
 
             # Method 2: Try to get link from any visible text or href on the page
             if not final_link:
@@ -322,35 +348,25 @@ def run_automation():
                     all_links = page.locator('a[href]')
                     for i in range(all_links.count()):
                         href = all_links.nth(i).get_attribute('href')
-                        if href and ('subscription' in href or 'key' in href or 'config' in href or 'ss://' in href or 'vless://' in href or 'vmess://' in href or 'trojan://' in href):
+                        if href and '/sub/' in href:
                             final_link = href
+                            print("[INFO] Got link from href.")
                             break
                 except Exception:
                     pass
 
-            # Method 3: Get the current page URL
-            if not final_link:
-                final_link = page.url
-
-            # Method 4: Get all text content and look for links
-            if not final_link or 'bot.botnovabooster' in final_link:
-                try:
-                    page_text = page.content()
-                    # Look for subscription/config URLs
-                    url_matches = re.findall(r'(https?://[^\s"<>]+(?:subscription|key|config|sub)[^\s"<>]*)', page_text)
-                    if url_matches:
-                        final_link = url_matches[0]
-                    # Look for VPN protocol links
-                    vpn_matches = re.findall(r'((?:ss|vless|vmess|trojan)://[^\s"<>]+)', page_text)
-                    if vpn_matches:
-                        final_link = vpn_matches[0]
-                except Exception:
-                    pass
+            # Final validation to avoid returning the installation guide URL
+            if final_link and 'bot.botnovabooster.ru' in final_link and 'subscriptionId' in final_link:
+                print("[WARN] Extracted link is the page URL, not the subscription link. Invalidating it.")
+                final_link = None
 
             print("=" * 60)
             print(f"[RESULT] Final extracted link: {final_link}")
             print(f"[RESULT] Current page URL: {page.url}")
             print("=" * 60)
+
+            if not final_link:
+                return {"success": False, "error": "Could not find the correct subscription link (/sub/...)."}
 
             return {"success": True, "link": final_link, "email": email}
 
