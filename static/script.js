@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyBtn = document.getElementById('copyBtn');
     const copyMessage = document.getElementById('copyMessage');
     const errorMessage = document.getElementById('errorMessage');
+    const restartBtn = document.getElementById('restartBtn');
 
     // Progress steps simulation
     const steps = [
@@ -102,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     generateBtn.addEventListener('click', startAutomation);
     retryBtn.addEventListener('click', startAutomation);
+    if(restartBtn) restartBtn.addEventListener('click', startAutomation);
     
     // Copy on clicking either the container or the button
     linkContainer.addEventListener('click', copyLinkToClipboard);
