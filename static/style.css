@@ -20,10 +20,9 @@ body {
     background-color: var(--bg-color);
     color: var(--text-main);
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
     position: relative;
 }
 
@@ -37,6 +36,7 @@ body {
     background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(15,23,42,1) 50%);
     animation: rotate 30s linear infinite;
     z-index: -1;
+    position: fixed;
 }
 
 @keyframes rotate {
@@ -47,6 +47,7 @@ body {
 .container {
     width: 90%;
     max-width: 500px;
+    margin: 10vh auto 2rem auto;
     padding: 2.5rem;
     border-radius: 24px;
     text-align: center;
