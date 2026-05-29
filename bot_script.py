@@ -205,12 +205,6 @@ def run_automation_with_callback(stream_callback=None):
         context = browser.new_context(permissions=['clipboard-read', 'clipboard-write'])
         page = context.new_page()
 
-        # OPTIMIZATION: Block images, fonts, and stylesheets to load instantly
-        page.route("**/*", lambda route: route.abort() 
-            if route.request.resource_type in ["image", "stylesheet", "font", "media"] 
-            else route.continue_()
-        )
-
         try:
             # ==== STEP 1: Navigate to site (with retry) ====
             max_nav_retries = 5
