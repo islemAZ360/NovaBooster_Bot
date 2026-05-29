@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveTerminal = document.getElementById('liveTerminal');
     const liveSpinner = document.getElementById('liveSpinner');
     const actionButtons = document.querySelector('.action-buttons');
+    const timerDisplay = document.getElementById('timerDisplay');
 
     // Progress steps simulation
     const steps = [
@@ -27,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let stepInterval;
+    let globalTimerInterval;
+    let startTime;
 
     function simulateProgress() {
         let currentStep = 0;
@@ -44,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function stopProgress() {
         clearInterval(stepInterval);
+        clearInterval(globalTimerInterval);
     }
 
     async function startAutomation() {
@@ -52,6 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
         errorState.classList.add('hidden');
         resultState.classList.add('hidden');
         loadingState.classList.remove('hidden');
+        
+        timerDisplay.textContent = '0.0s';
+        startTime = Date.now();
+        globalTimerInterval = setInterval(() => {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            timerDisplay.textContent = elapsed + 's';
+        }, 100);
         
         simulateProgress();
 
